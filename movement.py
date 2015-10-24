@@ -2,7 +2,7 @@
 
 import rospy
 from naoqi_bridge_msgs.msg import BodyPoseActionGoal
-from nao_dance.srv import MakeMove
+from nao_dance.srv import *
 
 class Move_maker:
     def __init__(self):
@@ -38,6 +38,7 @@ class Move_maker:
             move.goal.pose_name = "stand"
         self.move_publisher.publish(move)
         rospy.loginfo("Move published %s" % move.goal.pose_name)
+        return MakeMoveResponse()
 
 def main():
     Move_maker()
