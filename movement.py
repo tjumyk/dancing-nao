@@ -11,6 +11,7 @@ class Move_maker:
         self.move_service =rospy.Service("make_move", MakeMove, self.handle_make_move)
         self.nextForward = "right"
         self.nextBackward = "right"
+        rospy.loginfo("Movement node started")
 
     def handle_make_move(self, direction):
         move = BodyPoseActionGoal()

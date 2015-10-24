@@ -1,15 +1,22 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+__author__ = 'kelvin'
+
 import numpy as np
 import heapq
 import math
 import sys
 from cv_bridge import CvBridge, CvBridgeError
 import time
+import rospkg
 
 import cv2
 import rospy
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import Image
 from nao_dance.srv import MakeMove
+
 
 # ROS related variables
 image_topic = '/phone1/camera/image/raw'
@@ -18,6 +25,7 @@ make_move_service_name = '/make_move'
 make_move_service = None
 use_compression = True
 bridge = None
+package_path = None
 
 # local test variables
 cap = None
@@ -46,9 +54,11 @@ def nothing(_):
 
 
 def init():
-    global bg_sub, arrow_cnt
+    global bg_sub, arrow_cnt, package_path
     bg_sub = cv2.BackgroundSubtractorMOG2()
-    arrow = cv2.pyrDown(cv2.imread('res/arrow.png', 0))
+    ros_pack = rospkg.RosPack()
+    package_path = ros_pack.get_path('nao_dance')
+    arrow = cv2.pyrDown(cv2.imread(package_path + '/res/arrow.png', 0))
     ret, thresh = cv2.threshold(arrow, 50, 255, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     arrow_cnt = contours[0]
@@ -141,6 +151,7 @@ def update_move_queue():
         invalidated = []
         for j in range(len(queue)):
             move = queue[j]
+            # noinspection PyTypeChecker
             new_move = move - translate
             if new_move <= 0 <= move:
                 make_move(i)
@@ -248,11 +259,13 @@ def check_new_move(arrows, slots, directions, bounding_rectangles):
         # print slot_directions[direction], relative_dist, time.time()
         is_new_move = True
         for move in move_queues[direction]:
+            # noinspection PyTypeChecker
             if abs(move - relative_dist) <= move_duplicate_threshold:
                 is_new_move = False
                 break
         if is_new_move:
             # print slot_directions[direction], relative_dist, time.time()
+            # noinspection PyTypeChecker
             move_queues[direction].append(relative_dist)
 
 
@@ -375,7 +388,7 @@ def start_node():
     else:
         bridge = CvBridge()
         rospy.Subscriber(image_topic, Image, handle_image)
-    rospy.loginfo("Node started")
+    rospy.loginfo("Recognition node started")
     try:
         rospy.spin()
     except KeyboardInterrupt:
@@ -416,7 +429,7 @@ def start_local_test(video_file):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1 and sys.argv[1].endswith('.avi'):
         start_local_test(sys.argv[1])
     else:
         start_node()

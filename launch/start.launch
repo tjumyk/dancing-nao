@@ -1,0 +1,5 @@
+<launch>
+    <rosparam></rosparam>
+	<node pkg="nao_dance" type="movement.py" name="movement"></node>
+	<node pkg="nao_dance" type="recognition.py" name="recognition"></node>
+</launch>
