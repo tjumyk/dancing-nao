@@ -2,14 +2,13 @@
 
 import rospy
 from naoqi_bridge_msgs.msg import BodyPoseActionGoal
-from nao_dance.srv import Make_move
-#what's the package name?
+from nao_dance.srv import MakeMove
 
 class Move_maker:
     def __init__(self):
         rospy.init_node("movement", anonymous=True)
         self.move_publisher = rospy.Publisher("/body_pose/goal", BodyPoseActionGoal, queue_size=3)
-        self.move_service =rospy.Service("make_move", Make_move, self.handle_make_move)
+        self.move_service =rospy.Service("make_move", MakeMove, self.handle_make_move)
         self.nextForward = "right"
         self.nextBackward = "right"
 
