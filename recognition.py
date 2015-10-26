@@ -10,6 +10,7 @@ import sys
 from cv_bridge import CvBridge, CvBridgeError
 import time
 import rospkg
+from threading import Timer
 
 import cv2
 import rospy
@@ -19,11 +20,11 @@ from nao_dance.srv import MakeMove
 
 
 # ROS related variables
-image_topic = '/phone1/camera/image/raw'
+image_topic = '/nao_robot/camera/top/camera/image_raw'
 compressed_image_topic = '/phone1/camera/image/compressed'
 make_move_service_name = '/make_move'
 make_move_service = None
-use_compression = True
+use_compression = False
 bridge = None
 package_path = None
 
@@ -133,10 +134,15 @@ def handle_frame(frame):
     cv2.imshow('result', frame)
 
 
+def stand():
+    make_move_service("stand")
+
+
 def make_move(direction):
     print 'Move:', slot_directions[direction], time.time()
     if make_move_service is not None:
         make_move_service(make_move_commands[direction])
+        Timer(0.1, stand).start()
 
 
 def update_move_queue():

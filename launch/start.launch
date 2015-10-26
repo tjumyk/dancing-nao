@@ -2,4 +2,5 @@
     <rosparam></rosparam>
 	<node pkg="nao_dance" type="movement.py" name="movement"></node>
 	<node pkg="nao_dance" type="recognition.py" name="recognition"></node>
+	<node pkg="naoqi_pose" type="pose_manager.py" name="pose_manager" args="_xap:='/home/z5021315/catkin_ws/src/dancing-nao/poses.xap'"></node>
 </launch>
