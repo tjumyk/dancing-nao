@@ -39,6 +39,7 @@ frame_count = 0
 # common variables
 bg_sub = None
 arrow_cnt = None
+max_frame_size = 640 * 360
 slot_directions = ['L', 'D', 'U', 'R']
 make_move_commands = ['left', 'backward', 'forward', 'right']
 slot_angle_threshold = math.pi / 4.0
@@ -79,7 +80,8 @@ def init():
 
 def handle_frame(frame):
     update_move_queue()
-    frame = cv2.pyrDown(frame)
+    while frame.shape[0] * frame.shape[1] > max_frame_size:
+        frame = cv2.pyrDown(frame)
     fg_mask = bg_sub.apply(frame)
     # cv2.imshow('mask_original', fg_mask)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

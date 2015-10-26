@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#_xap:="/home/z5021315/catkin_ws/src/dancing-nao/poses.xap"
+#_xap:="/home/z5021315/catkin_ws/src/dancing-nao/res/poses.xap"
 
 import rospy
 from naoqi_bridge_msgs.msg import BodyPoseActionGoal
