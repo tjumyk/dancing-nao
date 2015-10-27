@@ -1,5 +1,4 @@
 # Choregraphe bezier export in Python.
-from naoqi import ALProxy
 names = list()
 times = list()
 keys = list()
@@ -108,11 +107,4 @@ names.append("RWristYaw")
 times.append([0.04, 0.6, 1.2])
 keys.append([[0.207048, [3, -0.0133333, 0], [3, 0.186667, 0]], [0.18097, [3, -0.186667, 0], [3, 0.2, 0]], [0.207048, [3, -0.2, 0], [3, 0, 0]]])
 
-try:
-  # uncomment the following line and modify the IP if you use this script outside Choregraphe.
-  # motion = ALProxy("ALMotion", IP, 9559)
-  motion = ALProxy("ALMotion")
-  motion.angleInterpolationBezier(names, times, keys)
-except BaseException, err:
-  print err
 

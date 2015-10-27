@@ -1,6 +1,9 @@
 <launch>
+	<rosparam>
+        nao_ip: "169.254.66.118"
+        nao_port: 9559
+    </rosparam>
     <node pkg="nao_dance" type="movement.py" name="movement"></node>
 	<node pkg="nao_dance" type="recognition.py" name="recognition"></node>
 	<!--<node pkg="nao_dance" type="recognition.py" name="recognition" args="$(find nao_dance)/res/demo1.avi"></node>-->
-	<node pkg="naoqi_pose" type="pose_manager.py" name="pose_manager" args="_xap:='$(find nao_dance)/res/poses.xap'"></node>
 </launch>
