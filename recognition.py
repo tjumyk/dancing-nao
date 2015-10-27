@@ -16,7 +16,7 @@ import cv2
 import rospy
 from sensor_msgs.msg import CompressedImage
 from sensor_msgs.msg import Image
-from nao_dance.srv import MakeMove
+from nao_dance.srv import *
 
 
 # ROS related variables
@@ -56,7 +56,10 @@ def nothing(_):
 
 
 def init():
-    global bg_sub, arrow_cnt, package_path
+    global bg_sub, arrow_cnt, package_path, make_move_service
+    rospy.init_node('color_extraction')
+    rospy.wait_for_service(make_move_service_name)
+    make_move_service = rospy.ServiceProxy(make_move_service_name, MakeMove)
     bg_sub = cv2.BackgroundSubtractorMOG2()
     ros_pack = rospkg.RosPack()
     package_path = ros_pack.get_path('nao_dance')
@@ -136,15 +139,24 @@ def handle_frame(frame):
     cv2.imshow('result', frame)
 
 
-def stand():
-    make_move_service("stand")
+def send_stand():
+    send_move_command('stand')
+
+
+def send_move_command(command):
+    request = MakeMoveRequest()
+    request.direction = command
+    try:
+        make_move_service(request)
+    except Exception, e:
+        rospy.logwarn(e)
 
 
 def make_move(direction):
     print 'Move:', slot_directions[direction], time.time()
     if make_move_service is not None:
-        make_move_service(make_move_commands[direction])
-        Timer(0.1, stand).start()
+        send_move_command(make_move_commands[direction])
+        Timer(0.1, send_stand).start()
 
 
 def update_move_queue():
@@ -385,11 +397,8 @@ def handle_image(data):
 
 
 # noinspection PyTypeChecker
-def start_node():
-    global bridge, make_move_service
-    rospy.init_node('color_extraction')
-    rospy.wait_for_service(make_move_service_name)
-    make_move_service = rospy.ServiceProxy(make_move_service_name, MakeMove)
+def start_camera():
+    global bridge
     init()
     if use_compression:
         rospy.Subscriber(compressed_image_topic, CompressedImage, handle_compressed_image)
@@ -440,4 +449,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1].endswith('.avi'):
         start_local_test(sys.argv[1])
     else:
-        start_node()
+        start_camera()
