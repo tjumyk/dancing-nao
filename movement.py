@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import rospy
-from naoqi_bridge_msgs.msg import BodyPoseActionGoal
+from naoqi_bridge_msgs.msg import BodyPoseWithSpeedGoal
 from nao_dance.srv import *
 
 class Move_maker:
     def __init__(self):
         rospy.init_node("movement", anonymous=True)
-        self.move_publisher = rospy.Publisher("/body_pose/goal", BodyPoseActionGoal, queue_size=3)
+        self.move_publisher = rospy.Publisher("/body_pose/goal", BodyPoseWithSpeedGoal, queue_size=10)
         self.move_service =rospy.Service("make_move", MakeMove, self.handle_make_move)
         self.nextForward = "right"
         self.nextBackward = "right"
@@ -18,30 +18,31 @@ class Move_maker:
         :type request MakeMoveRequest
         """
         direction = request.direction
-        move = BodyPoseActionGoal()
+        move = BodyPoseWithSpeedGoal()
         if direction == "forward":
             if self.nextForward == "right":
-                move.goal.pose_name = "rightFootForward"
+                move.posture_name = "rightFootForward"
                 self.nextForward = "left"
             else:
-                move.goal.pose_name = "leftFootForward"
+                move.posture_name = "leftFootForward"
                 self.nextForward = "right"
         elif direction == "backward":
             if self.nextBackward == "right":
-                move.goal.pose_name = "rightFootBack"
+                move.posture_name = "rightFootBack"
                 self.nextBackward = "left"
             else:
-                move.goal.pose_name = "leftFootBack"
+                move.posture_name = "leftFootBack"
                 self.nextBackward = "right"
         elif direction == "right":
-            move.goal.pose_name = "right"
+            move.posture_name = "right"
         elif direction == "left":
-            move.goal.pose_name = "left"
+            move.posture_name = "left"
         else:
             #back to standing position
-            move.goal.pose_name = "Stand"
+            move.posture_name = "Stand"
+        move.speed = 1
         self.move_publisher.publish(move)
-        rospy.loginfo("Move published %s" % move.goal.pose_name)
+        rospy.loginfo("Move published %s" % move.posture_name)
         return MakeMoveResponse()
 
 def main():
