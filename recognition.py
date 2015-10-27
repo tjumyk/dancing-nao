@@ -6,32 +6,33 @@ __author__ = 'kelvin'
 import numpy as np
 import heapq
 import math
-from cv_bridge import CvBridge, CvBridgeError
+import numpy
 import time
 import rospkg
-from threading import Timer
 
 import cv2
 import rospy
-from sensor_msgs.msg import CompressedImage
-from sensor_msgs.msg import Image
+from naoqi import ALProxy
+import vision_definitions
 from nao_dance.srv import *
 
+# NAO related variables
+camera_proxy = None
+camera_resolution = vision_definitions.k720p
+camera_colorSpace = vision_definitions.kBGRColorSpace
+camera_fps = 5
+camera_client = None
 
 # ROS related variables
-image_topic = '/nao_robot/camera/top/camera/image_raw'
-compressed_image_topic = '/phone1/camera/image/compressed'
 make_move_service_name = '/make_move'
 make_move_service = None
-use_compression = False
-bridge = None
 package_path = None
 
 # local test variables
 cap = None
 debugging = False
 pause = False
-wait_time = 50
+wait_time = 100
 frame_delay = 0
 frame_count = 0
 
@@ -46,7 +47,7 @@ slot_dist_percent_threshold = 0.3
 font = cv2.FONT_HERSHEY_SIMPLEX
 move_queues = [[], [], [], []]
 move_queue_timestamp = None
-move_translate_speed_ratio = 6.0  # times average height of arrow, per second
+move_translate_speed_ratio = 3.2  # times average height of arrow, per second
 move_duplicate_threshold = 0.8  # times average height of arrow
 
 
@@ -56,7 +57,7 @@ def nothing(_):
 
 def init():
     global bg_sub, arrow_cnt, package_path, make_move_service
-    rospy.init_node('color_extraction')
+    rospy.init_node('recognition')
     rospy.wait_for_service(make_move_service_name)
     make_move_service = rospy.ServiceProxy(make_move_service_name, MakeMove)
     bg_sub = cv2.BackgroundSubtractorMOG2()
@@ -75,7 +76,7 @@ def init():
     cv2.namedWindow('result')
     cv2.createTrackbar('diff% max', 'result', 20, 100, nothing)
     cv2.createTrackbar('area min', 'result', 300, 1000, nothing)
-    cv2.createTrackbar('saturation split', 'result', 145, 255, nothing)
+    cv2.createTrackbar('saturation split', 'result', 105, 255, nothing)
     cv2.namedWindow('contours')
     cv2.createTrackbar('approx', 'contours', 34, 100, nothing)
 
@@ -138,10 +139,6 @@ def handle_frame(frame):
     cv2.imshow('result', frame)
 
 
-def send_stand():
-    send_move_command('stand')
-
-
 def send_move_command(command):
     request = MakeMoveRequest()
     request.direction = command
@@ -155,7 +152,6 @@ def make_move(direction):
     print 'Move:', slot_directions[direction], time.time()
     if make_move_service is not None:
         send_move_command(make_move_commands[direction])
-        Timer(0.1, send_stand).start()
 
 
 def update_move_queue():
@@ -373,42 +369,26 @@ def direction_recognition(candidate_indexes, contours, frame):
     return directions
 
 
-def handle_compressed_image(data):
-    """
-    :type data: CompressedImage
-    """
-    frame = cv2.imdecode(np.fromstring(data.data, np.uint8), cv2.CV_LOAD_IMAGE_COLOR)
-    handle_frame(frame)
-    cv2.waitKey(1)
-
-
-def handle_image(data):
-    """
-    :type data: Image
-    """
-    try:
-        frame = bridge.imgmsg_to_cv2(data, "bgr8")
-    except CvBridgeError, e:
-        rospy.logwarn(e)
-        return
-    handle_frame(frame)
-    cv2.waitKey(1)
-
-
 # noinspection PyTypeChecker
 def start_camera():
-    global bridge
+    global camera_proxy, camera_client
     init()
-    if use_compression:
-        rospy.Subscriber(compressed_image_topic, CompressedImage, handle_compressed_image)
-    else:
-        bridge = CvBridge()
-        rospy.Subscriber(image_topic, Image, handle_image)
+    camera_proxy = ALProxy("ALVideoDevice", rospy.get_param('nao_ip'), rospy.get_param('nao_port'))
+    camera_client = camera_proxy.subscribe("python_client", camera_resolution, camera_colorSpace, camera_fps)
     rospy.loginfo("Recognition node started")
+    rate = rospy.Rate(camera_fps)
     try:
-        rospy.spin()
+        while not rospy.is_shutdown():
+            nao_image = camera_proxy.getImageRemote(camera_client)
+            frame = (numpy.reshape(numpy.frombuffer(nao_image[6], dtype='%iuint8' % nao_image[2]),
+                                   (nao_image[1], nao_image[0], nao_image[2])))
+            handle_frame(frame)
+            cv2.waitKey(1)
+            rate.sleep()
     except KeyboardInterrupt:
         rospy.loginfo("Shutting down node")
+    finally:
+        camera_proxy.unsubscribe(camera_client)
     cv2.destroyAllWindows()
 
 
@@ -418,7 +398,7 @@ def start_local_test(video_file):
     cap = cv2.VideoCapture(video_file)
     init()
     frame_count = 0
-    while 1:
+    while not rospy.is_shutdown():
         if not pause:
             ret, frame = cap.read()
             frame_count += 1
@@ -445,7 +425,7 @@ def start_local_test(video_file):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1 and sys.argv[1].endswith('.avi'):
+    if len(sys.argv) > 1 and (sys.argv[1].endswith('.avi') or sys.argv[1].endswith('.mp4')):
         start_local_test(sys.argv[1])
     else:
         start_camera()
