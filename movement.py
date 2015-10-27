@@ -20,7 +20,7 @@ class Move_maker:
         direction = request.direction
         move = BodyPoseActionGoal()
         if direction == "forward":
-            if self.nextFoward == "right":
+            if self.nextForward == "right":
                 move.goal.pose_name = "rightFootForward"
                 self.nextForward = "left"
             else:
