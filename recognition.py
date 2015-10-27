@@ -6,7 +6,6 @@ __author__ = 'kelvin'
 import numpy as np
 import heapq
 import math
-import sys
 from cv_bridge import CvBridge, CvBridgeError
 import time
 import rospkg
