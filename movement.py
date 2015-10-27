@@ -2,21 +2,25 @@
 
 import rospy
 from naoqi_bridge_msgs.msg import BodyPoseActionGoal
-from nao_dance.srv import Make_move
-#what's the package name?
+from nao_dance.srv import *
 
 class Move_maker:
     def __init__(self):
         rospy.init_node("movement", anonymous=True)
         self.move_publisher = rospy.Publisher("/body_pose/goal", BodyPoseActionGoal, queue_size=3)
-        self.move_service =rospy.Service("make_move", Make_move, self.handle_make_move)
+        self.move_service =rospy.Service("make_move", MakeMove, self.handle_make_move)
         self.nextForward = "right"
         self.nextBackward = "right"
+        rospy.loginfo("Movement node started")
 
-    def handle_make_move(self, direction):
+    def handle_make_move(self, request):
+        """
+        :type request MakeMoveRequest
+        """
+        direction = request.direction
         move = BodyPoseActionGoal()
         if direction == "forward":
-            if self.nextFoward == "right":
+            if self.nextForward == "right":
                 move.goal.pose_name = "rightFootForward"
                 self.nextForward = "left"
             else:
@@ -35,9 +39,10 @@ class Move_maker:
             move.goal.pose_name = "left"
         else:
             #back to standing position
-            move.goal.pose_name = "stand"
+            move.goal.pose_name = "Stand"
         self.move_publisher.publish(move)
         rospy.loginfo("Move published %s" % move.goal.pose_name)
+        return MakeMoveResponse()
 
 def main():
     Move_maker()
