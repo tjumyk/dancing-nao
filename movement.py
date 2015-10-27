@@ -39,7 +39,7 @@ class Move_maker:
             move.goal.pose_name = "left"
         else:
             #back to standing position
-            move.goal.pose_name = "stand"
+            move.goal.pose_name = "Stand"
         self.move_publisher.publish(move)
         rospy.loginfo("Move published %s" % move.goal.pose_name)
         return MakeMoveResponse()
