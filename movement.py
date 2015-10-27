@@ -13,7 +13,11 @@ class Move_maker:
         self.nextBackward = "right"
         rospy.loginfo("Movement node started")
 
-    def handle_make_move(self, direction):
+    def handle_make_move(self, request):
+        """
+        :type request MakeMoveRequest
+        """
+        direction = request.direction
         move = BodyPoseActionGoal()
         if direction == "forward":
             if self.nextFoward == "right":
