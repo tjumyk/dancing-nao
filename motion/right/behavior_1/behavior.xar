@@ -156,7 +156,6 @@
                                     <BehaviorKeyframe name="keyframe1" index="1">
                                         <Diagram>
                                             <Box name="Go to position left" id="1" localization="8" tooltip="Robot will go to the position left&lt;br/&gt;Position description : " x="118" y="48">
-                                                <bitmap></bitmap>
                                                 <script language="4">
                                                     <content>
                                                         <![CDATA[]]>

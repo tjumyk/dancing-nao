@@ -47,7 +47,7 @@ slot_dist_percent_threshold = 0.3
 font = cv2.FONT_HERSHEY_SIMPLEX
 move_queues = [[], [], [], []]
 move_queue_timestamp = None
-move_translate_speed_ratio = 3.2  # times average height of arrow, per second
+move_translate_speed_ratio = 4.0  # times average height of arrow, per second
 move_duplicate_threshold = 0.8  # times average height of arrow
 
 
