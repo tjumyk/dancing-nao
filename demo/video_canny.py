@@ -1,6 +1,6 @@
 import cv2
 
-cap = cv2.VideoCapture('res/demo1.avi')
+cap = cv2.VideoCapture('res/demo.mp4')
 
 
 def nothing(x):
