@@ -5,5 +5,6 @@
     </rosparam>
     <node pkg="nao_dance" type="movement.py" name="movement"></node>
 	<node pkg="nao_dance" type="recognition.py" name="recognition"></node>
-	<!--<node pkg="nao_dance" type="recognition.py" name="recognition" args="$(find nao_dance)/res/demo1.avi"></node>-->
+	<!-- Use the next line to replace the line above to run local test -->
+	<!--<node pkg="nao_dance" type="recognition.py" name="recognition" args="$(find nao_dance)/res/demo.mp4"></node>-->
 </launch>

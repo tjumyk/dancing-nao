@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-__author__ = 'kelvin'
-
 import numpy as np
 import heapq
 import math
@@ -15,6 +13,8 @@ import rospy
 from naoqi import ALProxy
 import vision_definitions
 from nao_dance.srv import *
+
+__author__ = 'kelvin'
 
 # NAO related variables
 camera_proxy = None
@@ -32,7 +32,7 @@ package_path = None
 cap = None
 debugging = False
 pause = False
-wait_time = 100
+wait_time = 80
 frame_delay = 0
 frame_count = 0
 
